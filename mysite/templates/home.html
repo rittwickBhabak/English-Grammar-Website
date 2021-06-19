@@ -1,0 +1,20 @@
+{% extends "base.html" %} 
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block style %} 
+<link rel="stylesheet" href="{% static 'website/css/home.css' %}">
+{% endblock %} 
+{% block content %} 
+
+<div class="continue-reading">
+    <h2 class="text-center">
+        Continue reading from <br>
+        <span class="continue-reading__book-name">Applied English Grammar</span> <br> <span class="continue-reading__page-no">page no <span id="continue-reading__page-no">20</span> </span>
+    </h2>
+    <a href="#!" class="continue-reading__link text-center">
+        <span> Continue Reading</span>
+        <img class="continue-reading__logo" src="{% static 'website/images/continue-reading.svg' %}" alt="continue-reading">
+    </a>
+</div>
+
+{% endblock %}

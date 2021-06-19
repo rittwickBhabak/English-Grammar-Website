@@ -1,0 +1,64 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.top-bar {
+	background: #333;
+	color: #fff;
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+}
+#go {
+	background-color: coral;
+	color: #fff;
+	padding: 0.14rem 1rem;
+	outline: none;
+	border: none;
+	cursor: pointer;
+}
+.scale-ctrl {
+	margin-left: 1rem;
+}
+.scale-ctrl-btn {
+	background: coral;
+	color: #fff;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	padding: 0.3rem;
+	outline: none;
+	/* margin-right: 10px; */
+}
+.btn {
+	background: coral;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+	padding: 0.7rem 2rem;
+	outline: none;
+	margin-right: 10px;
+}
+.btn:hover {
+	opacity: 0.9;
+}
+.page-info {
+	margin-left: 1rem;
+}
+#goto-div {
+	margin-left: 1rem;
+}
+.error {
+	background: orangered;
+	color: #fff;
+	padding: 1rem;
+}
+#pdf-render {
+	margin: auto;
+	display: block;
+	margin-top: 20px;
+}
+
+#goto-page-num{
+    padding: 5px;
+}

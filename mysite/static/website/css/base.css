@@ -1,0 +1,135 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body{
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, sans-serif;
+}
+.navbar-wrapper{
+    width: 100%;
+    position: fixed;
+    height: 80px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+    background-color: #f8f6f6;
+    display: flex;
+    justify-content: center;
+    top: 0;
+}
+
+.navbar {
+    width: 80%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.nav-item:nth-child(2){
+    width: 100%;
+    margin-right: 0;
+}
+
+.nav-item.logo{
+    width:60px;
+    height: 60px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+img.logo-img{
+    width: 100%;
+    height: 100%;
+}
+
+.nav-list{
+    margin-right: 80px;
+}
+
+.nav-list > a {
+    text-decoration: none;
+    color: #000;
+}
+
+.nav-list-item{
+    display: inline-block;
+    font-size: 25px;
+    margin-right: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.nav-list-item.active{
+    border-bottom: 2px solid black;
+}
+
+.nav-list-item:hover{
+    border-bottom: 2px solid black;
+}
+
+.nav-list-item > img{
+    width: 20px;
+    height: 20px;
+}
+
+.nav-list-item:last-child {
+    float: right;
+    height: 100%;
+}
+
+.nav-list-item > form{
+    height: 100%;
+    display: grid;
+    grid-template-columns: 200px 30px;
+}
+.nav-list-item > form > input{
+    padding: 5px;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    width: 200px;
+    background-color: #fff;
+    border-bottom: 2px solid gray;
+}
+
+.nav-list-item > form > input:focus{
+    border-bottom: 2px solid #000;
+}
+
+.nav-list-item > form > button {
+    background-color: #fff;
+    outline: none;
+    border: none;
+    font-size: 20px;
+    padding: 5px;
+    margin-left:0;
+    border-bottom: 2px solid gray;
+}
+
+.nav-list-item > form > button:hover{
+    border: none;
+    cursor: pointer;
+}
+.nav-list-item:last-child:hover{
+    border: 2px solid transparent;
+}
+
+.container{
+    width: 80%;
+    display: block;
+    margin: auto;
+    margin-top: 100px;
+    margin-bottom: 100px;   
+    min-height: calc(100% - 80px);
+}
+
+.text-center{
+    text-align: center;
+}

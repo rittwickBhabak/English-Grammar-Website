@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'website/css/base.css' %}">
+    
+    <!-- Fontawesome icon cdn -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    {% block style %}{% endblock %} 
+</head>
+<body>
+    <div class="navbar-wrapper">
+        <div class="navbar">
+            <a href="{% url 'home' %}" class="logo nav-item"><img class="logo-img" src="{% static 'website/images/logo.png' %}" alt="brand-logo"></a>
+            <ul class="nav-list nav-item">
+                <a href="{% url 'grammar:books' %}" class="nav-list-item">Books <img src="{% static 'website/images/book.svg' %}" alt="book"></a>
+                <a href="{% url 'grammar:books' %}" class="nav-list-item">Chapters <img src="{% static 'website/images/category.svg' %}" alt="categories"></a>
+                <a href="{% url 'grammar:books' %}" class="nav-list-item">Contest <img src="{% static 'website/images/contest.svg' %}" alt="contest"></a>
+                <li class="nav-list-item">
+                    <form action="/search" method="get">
+                        <input type="text" name="search-term" id="search-term">
+                        <button type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="container">
+        {% block content %} {% endblock %}
+    </div>
+</body>
+</html>

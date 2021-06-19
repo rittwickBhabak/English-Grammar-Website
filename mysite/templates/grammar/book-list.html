@@ -1,0 +1,31 @@
+{% extends "base.html" %} 
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block style %} 
+<link rel="stylesheet" href="{% static 'website/css/grammar/book-list.css' %}">
+{% endblock %} 
+{% block content %} 
+
+<h1>
+    <img class="book-list-icon" src="{% static 'website/images/book-list.svg' %}" alt="book-list">
+    List of Books 
+</h1>
+<ul class="book-list">
+    <li class="book">
+        <a href="{% url 'grammar:book' %}">Applied English Grammar</a>
+    </li>
+    <li class="book">
+        <a href="#!">Oxford English Idioms</a>
+    </li>
+    <li class="book">
+        <a href="#!">Wrien And Martin</a>
+    </li>
+    <li class="book">
+        <a href="#!">Others</a>
+    </li>
+    <li class="add-book">
+        <a href="#!">Add More Book</a>
+    </li>
+</ul>
+
+{% endblock %}
