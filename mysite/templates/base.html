@@ -19,14 +19,14 @@
             <a href="{% url 'home' %}" class="logo nav-item"><img class="logo-img" src="{% static 'website/images/logo.png' %}" alt="brand-logo"></a>
             <ul class="nav-list nav-item">
                 <a href="{% url 'grammar:books' %}" class="nav-list-item">Books <img src="{% static 'website/images/book.svg' %}" alt="book"></a>
-                <a href="{% url 'grammar:books' %}" class="nav-list-item">Chapters <img src="{% static 'website/images/category.svg' %}" alt="categories"></a>
-                <a href="{% url 'grammar:books' %}" class="nav-list-item">Contest <img src="{% static 'website/images/contest.svg' %}" alt="contest"></a>
-                <li class="nav-list-item">
+                <a href="{% url 'grammar:chapters' %}" class="nav-list-item">Chapters <img src="{% static 'website/images/category.svg' %}" alt="categories"></a>
+                <a href="{% url 'grammar:books' %}" class="nav-list-item">Practice <img src="{% static 'website/images/test.png' %}" alt="contest"></a>
+                <!-- <li class="nav-list-item">
                     <form action="/search" method="get">
                         <input type="text" name="search-term" id="search-term">
                         <button type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
                     </form>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>

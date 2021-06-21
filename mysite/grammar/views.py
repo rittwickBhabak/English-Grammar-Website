@@ -9,3 +9,9 @@ def book(request):
         'pdf': 'oxford_idioms.pdf'
     }
     return render(request, 'grammar/pdf-viewer.html', context=context)
+
+def chapters(request):
+    return render(request, 'grammar/chapters.html')
+
+def chapter(request):
+    return render(request, 'grammar/chapter.html')

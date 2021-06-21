@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
-{% block style %} 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% block style %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="{% static 'website/css/grammar/pdf-viewer.css' %}">
 {% endblock %}
 {% block content %}
@@ -9,12 +11,13 @@
     <button class="btn" id="prev-page">
         <i class="fas fa-arrow-circle-left"></i> Prev Page
     </button>
-    <button class="btn" id="next-page">
-        Next Page <i class="fas fa-arrow-circle-right"></i>
-    </button>
     <span class="page-info">
         Page <span id="page-num"></span> of <span id="page-count"></span>
     </span>
+    <button class="btn" id="next-page">
+        Next Page <i class="fas fa-arrow-circle-right"></i>
+    </button>
+
     <form onsubmit="return goto(event)" id="goto-div">
         <label for="goto-page-num">Go to page: </label>
         <!-- <input type="number" id="goto-page-num" min="1" max="111"> -->
@@ -26,13 +29,80 @@
             <i class="fas fa-plus"></i>
         </button>
         <span id="current-scale"></span>%
-        <button class="scale-ctrl-btn" id="scale-decr">
+        <button class="scale-ctrl-btn" id="scale-decr" placeholder="Go to...">
             <i class="fas fa-minus"></i>
         </button>
     </div>
+    <button id="add-question" title="Question and Answers">
+        <img src="{% static 'website/images/add-question-color.png' %}" alt="">
+
+    </button>
+</div>
+
+<canvas id="pdf-render"></canvas>
+
+
+<!-- Modal -->
+<div id="add-question-modal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <button id="close-add-question-modal">&times;</button>
+        <form class="add-question-form">
+            <h1>Add Question</h1>
+            <label for="new-question">Question</label>
+            <input type="text" name="new-question" id="new-question">
+            <label for="new-answer">Answer</label>
+            <textarea type="text" name="new-answer" id="new-answer" oninput="adjustHeight(event)"></textarea>
+            <button type="submit">Add Question</button>
+        </form>
+        <hr>
+        <h1>Questions</h1>
+        <ul class="question-list">
+            <li class="question-item">
+                <div class="question">
+                    <div class="question-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor aliquam beatae quos, eaque nihil quaerat.
+                    </div>
+                </div>
+                <div class="answer">
+                    <div class="answer-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente optio, aliquid quisquam, voluptatum laboriosam sint neque ad illum voluptas, veritatis consequuntur error libero praesentium! Quia officiis exercitationem consequatur porro et aperiam fuga corporis. Pariatur, necessitatibus ratione nisi quas ipsa a reprehenderit molestias? Repellat assumenda ad illum debitis ipsum in veniam!
+                    </div>
+                    <button class="edit-answer"><img src="{% static 'website/images/edit-light.png' %}" alt=""></button>
+                </div>
+            </li>
+            <li class="question-item">
+                <div class="question">
+                    <div class="question-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor aliquam beatae quos, eaque nihil quaerat.
+                    </div>
+                </div>
+                <div class="answer">
+                    <div class="answer-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente optio, aliquid quisquam, voluptatum laboriosam sint neque ad illum voluptas, veritatis consequuntur error libero praesentium! Quia officiis exercitationem consequatur porro et aperiam fuga corporis. Pariatur, necessitatibus ratione nisi quas ipsa a reprehenderit molestias? Repellat assumenda ad illum debitis ipsum in veniam!
+                    </div>
+                    <button class="edit-answer"><img src="{% static 'website/images/edit-light.png' %}" alt=""></button>
+                </div>
+            </li>
+            <li class="question-item">
+                <div class="question">
+                    <div class="question-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor aliquam beatae quos, eaque nihil quaerat.
+                    </div>
+                </div>
+                <div class="answer">
+                    <div class="answer-text">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente optio, aliquid quisquam, voluptatum laboriosam sint neque ad illum voluptas, veritatis consequuntur error libero praesentium! Quia officiis exercitationem consequatur porro et aperiam fuga corporis. Pariatur, necessitatibus ratione nisi quas ipsa a reprehenderit molestias? Repellat assumenda ad illum debitis ipsum in veniam!
+                    </div>
+                    <button class="edit-answer"><img src="{% static 'website/images/edit-light.png' %}" alt=""></button>
+                </div>
+            </li>
+
+        </ul>
+    </div>
 
 </div>
-<canvas id="pdf-render"></canvas>
 
 <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 <!-- <script src="{% static 'website/js/pdf-viewer.js' %}"></script> -->
@@ -149,5 +219,46 @@
         renderPage(pageNum)
         currentScale.textContent = parseInt(scale * 100);
     })
+</script>
+
+<!-- modal script -->
+<script>
+    var modal = document.getElementById("add-question-modal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("add-question");
+
+    // Get the <span> element that closes the modal
+    var span = document.querySelector('#close-add-question-modal')
+
+    // When the user clicks the button, open the modal 
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function adjustHeight(e){
+        e.target.style.height = 'auto';
+        e.target.style.height = (e.target.scrollHeight+50) + 'px'
+    }
+
+    const questionItems = document.querySelectorAll('.question')
+    for(let question of questionItems){
+        question.addEventListener('click', (e)=>{
+            e.target.parentNode.parentNode.classList.toggle('show')
+        })
+    }
+    // const threeDots = 
 </script>
 {% endblock %}
