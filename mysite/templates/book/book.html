@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %} {{book.name}} {% endblock %}
+{% block style %}
+<style>
+    .error {
+        background: orangered;
+        color: #fff;
+        padding: 1rem;
+    }
+
+    #pdf-render {
+        margin: auto;
+        display: block;
+        border: 1px solid black;
+    }
+
+    #goto-page-num {
+        border: none;
+        padding-left: 10px;
+        outline: none;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand  navbar-dark bg-dark top-bar">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item mx-2">
+                    <button class="btn btn-sm btn-primary" id="prev-page">Prev Page</button>
+                </li>
+                <li class="nav-item mx-2">
+                    <span class="page-info text-white">
+                        Page <span id="page-num"></span> of <span id="page-count"></span>
+                    </span>
+                </li>
+                <li class="nav-item mx-2">
+                    <button class="btn btn-sm btn-primary" id="next-page">Next Page</button>
+                </li>
+                <li class="nav-item mx-2 d-none">
+                    <button class="btn btn-sm btn-primary" id="add-page">Add Page</button>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <form onsubmit="return goto(event)" id="goto-div">
+                    <label for="goto-page-num">Go to page: </label>
+                    <input type="number" class="" id="goto-page-num">
+                    <button id="go" class="btn btn-sm btn-primary">Go</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+<div class="bg-dark d-flex justify-content-center">
+    <div class="container text-white text-center">
+        <label for="zoomLevel" class="form-label">Zoom Level <span id="current-scale"></span>%</label>
+        <input type="range" class="form-range" min="50" max="200" step="0.5" id="zoomLevel">
+    </div>
+</div>
+
+<div id="last-page-updated" style="position: fixed; bottom: 10px; left: 10px; display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+        class="bi bi-check2-circle text-success" viewBox="0 0 16 16">
+        <path
+            d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z" />
+        <path
+            d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z" />
+    </svg> Page Number Updated
+</div>
+
+<div id="zoom-level-updated" style="position: fixed; bottom: 10px; left: 10px; display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+        class="bi bi-check2-circle text-success" viewBox="0 0 16 16">
+        <path
+            d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z" />
+        <path
+            d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z" />
+    </svg> Zoom Level Updated
+</div>
+
+<button type="button" style="position: fixed;bottom:10px; right:10px;" class="btn btn-primary btn-sm"
+    data-bs-toggle="modal" data-bs-target="#add-question">Add</button>
+
+<!-- Modal Body -->
+<div class="modal fade" id="add-question" tabindex="-1" aria-labelledby="add-questionLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="add-question-form">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add-questionLabel">Add New Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="question" class="form-label">Question</label>
+                    <input type="text" class="form-control" id="question" placeholder="Enter Question">
+                </div>
+                <div class="mb-3">
+                    <label for="answer" class="form-label">Answer</label>
+                    <textarea class="form-control" id="answer" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="modal-close-btn" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" id="submit-question" class="btn btn-primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<canvas id="pdf-render" class="my-3"></canvas>
+
+<div class="container-fluid my-3 mt-5 w-100" id="question-answer-wrapper">
+    <h1 class="display-5">Questions</h1>
+    <div id="question-answer">
+        {% if questions %}
+        {% for question in questions %}
+        <div class="card my-3" id="card-{{question.id}}">
+            {% if highlight and highlight == question.id %} 
+            <div class="card-body position-relative">
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                This question
+            </span>
+            {% else %} 
+            <div class="card-body">
+            {% endif %} 
+              <h5 class="card-title" id="card-title-{{question.id}}">Question: {{question.question}}</h5>
+              <div class="card-text" id="card-text-{{question.id}}">
+                <b>Answer</b>: <br/>
+                {{question.answer}}
+                </div>
+                <button type="button" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal" data-bs-target="#edit-answer-{{question.id}}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="modal fade" id="edit-answer-{{question.id}}" tabindex="-1" aria-labelledby="edit-answer-{{question.id}}Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <form 
+                class="modal-content" 
+                id="edit-answer-{{question.id}}-form" 
+                action="/book/update-question/" 
+                method="POST"
+                data-qid="{{question.id}}"
+                onsubmit="updateQuestion(event)"
+                >
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="edit-answer-{{question.id}}Label">Update Question</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="update-question-{{question.id}}" class="form-label">Question</label>
+                            <input type="text" class="form-control" id="update-question-{{question.id}}" value="{{question.question}}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="update-answer-{{question.id}}" class="form-label">Answer</label>
+                            <textarea class="form-control" id="update-answer-{{question.id}}" rows="3">{{question.answer}}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="modal-close-btn-{{question.id}}" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="submit-question" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %} 
+        {% else %} 
+        <h2 class="lead" id="no-question-available-message">
+            No Questions Available
+        </h2>
+        {% endif %}
+      </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script>
+    const getURLParams = function (url) {
+        let params = {};
+        let parser = document.createElement('a');
+        parser.href = url;
+        let query = parser.search.substring(1);
+        let vars = query.split('&');
+        for (let i = 0; i < vars.length; i++) {
+            let pair = vars[i].split('=');
+            params[pair[0]] = decodeURIComponent(pair[1]);
+        }
+        return params;
+    };
+
+    let urlParams = { 'page': '{{book.last_read_page}}' }
+    if(getURLParams(window.location.href)['page']){
+        urlParams = getURLParams(window.location.href)
+    }
+    const url = '/media/{{book.file}}';
+    const gotoPageNum = document.getElementById('goto-page-num');
+    const currentScale = document.getElementById('current-scale');
+    const scaleIncrBtn = document.getElementById('scale-incr');
+    const scaleDecrBtn = document.getElementById('scale-decr');
+    const zoomLevel = document.querySelector('#zoomLevel');
+    const addPage = document.querySelector('#add-page');
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+
+    let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null,
+        scale = 1.0;
+        let prev_scale = '{{book.zoom_level}}'
+        let temp_scale = parseFloat(prev_scale) / 100.0;
+        scale = temp_scale
+
+    const canvas = document.querySelector('#pdf-render'),
+        ctx = canvas.getContext('2d');
+
+    // Render the page 
+    const renderPage = num => {
+        pageIsRendering = true;
+        zoomLevel.disabled = true;
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            const renderCtx = {
+                canvasContext: ctx,
+                viewport
+            }
+            page.render(renderCtx).promise.then(() => {
+                pageIsRendering = false;
+                if (pageNumIsPending !== null) {
+                    renderPage(pageNumIsPending);
+                    pageNumIsPending = null;
+                }
+                zoomLevel.disabled = false;
+                currentScale.textContent = parseInt(scale * 100)
+                zoomLevel.value = scale * 100
+            });
+        })
+        // Output current page 
+        document.querySelector('#page-num').textContent = num
+    }
+
+    // Check for pages rendering 
+    const queueRenderPage = num => {
+        if (pageIsRendering) {
+            pageNumIsPending = num;
+        } else {
+            renderPage(num);
+        }
+    }
+
+    //Show Prev Page
+    const showPrevPage = () => {
+        if (pageNum <= 1) {
+            return;
+        }
+        pageNum--;
+        if (pageNum <= 1) {
+            document.querySelector('#prev-page').disabled = true
+        } else {
+            document.querySelector('#prev-page').disabled = false
+        }
+        if (pageNum >= pdfDoc.numPages) {
+            document.querySelector('#next-page').disabled = true
+        } else {
+            document.querySelector('#next-page').disabled = false
+        }
+        queueRenderPage(pageNum);
+        let data = new FormData();
+
+        data.append('last_page', pageNum)
+        data.append('book_id', '{{book.id}}')
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/update-last-page/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    let lastPageUpdateLogo = document.querySelector('#last-page-updated')
+                    lastPageUpdateLogo.style.display = 'block'
+                    setTimeout(() => {
+                        lastPageUpdateLogo.style.display = 'none'
+                    }, 2000)
+                }
+            })
+            .catch(errors => console.log(errors))
+    }
+    document.querySelector('#prev-page').addEventListener('click', showPrevPage);
+
+    //Show Next Page
+    const showNextPage = () => {
+        if (pageNum >= pdfDoc.numPages) {
+
+            return;
+        }
+        pageNum++;
+        if (pageNum <= 1) {
+            document.querySelector('#prev-page').disabled = true
+        } else {
+            document.querySelector('#prev-page').disabled = false
+        }
+        if (pageNum >= pdfDoc.numPages) {
+            document.querySelector('#next-page').disabled = true
+        } else {
+            document.querySelector('#next-page').disabled = false
+        }
+        queueRenderPage(pageNum);
+        let data = new FormData();
+
+        data.append('last_page', pageNum)
+        data.append('book_id', '{{book.id}}')
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/update-last-page/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    let lastPageUpdateLogo = document.querySelector('#last-page-updated')
+                    lastPageUpdateLogo.style.display = 'block'
+                    setTimeout(() => {
+                        lastPageUpdateLogo.style.display = 'none'
+                    }, 2000)
+                }
+            })
+            .catch(errors => console.log(errors))
+
+    }
+    document.querySelector('#next-page').addEventListener('click', showNextPage);
+
+    // Get the Dcoument 
+    pdfjsLib.getDocument(url).promise.then(function (pdfDoc_) {
+        pdfDoc = pdfDoc_;
+        document.querySelector('#page-count').textContent = pdfDoc.numPages;
+        gotoPageNum.min = 1;
+        gotoPageNum.max = pdfDoc.numPages;
+        currentScale.textContent = 100;
+        if (urlParams['page']) {
+            try {
+                let x = parseInt(urlParams['page']);
+                if (1 <= x && x <= gotoPageNum.max) {
+                    pageNum = parseInt(urlParams['page'])
+                } else {
+                    pageNum = 1;
+                }
+            } catch {
+                pageNum = 1
+            }
+        }
+        renderPage(pageNum);
+    }).catch(err => {
+        //display error
+        const div = document.createElement('div');
+        div.className = "error";
+        div.appendChild(document.createTextNode(err.message));
+        document.querySelector('body').insertBefore(div, canvas);
+        // remove top-bar
+        document.querySelector('.top-bar').style.display = 'none';
+    })
+    
+    const goto = (e) => {
+        e.preventDefault();
+        if (gotoPageNum) {
+            pageNum = +(gotoPageNum.value);
+            renderPage(pageNum)
+        }
+        if (gotoPageNum.value <= 1) {
+            document.querySelector('#prev-page').disabled = true
+        } else {
+            document.querySelector('#prev-page').disabled = false
+        }
+        if (gotoPageNum.value >= pdfDoc.numPages) {
+            document.querySelector('#next-page').disabled = true
+        } else {
+            document.querySelector('#next-page').disabled = false
+        }
+        let data = new FormData();
+
+        data.append('last_page', pageNum)
+        data.append('book_id', '{{book.id}}')
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/update-last-page/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    let lastPageUpdateLogo = document.querySelector('#last-page-updated')
+                    lastPageUpdateLogo.style.display = 'block'
+                    setTimeout(() => {
+                        lastPageUpdateLogo.style.display = 'none'
+                    }, 2000)
+                    console.log('page number updated')
+                }
+            })
+            .catch(errors => console.log(errors))
+        return false;
+    }
+
+
+    zoomLevel.addEventListener('change', (e) => {
+        scale = e.target.value / 100
+        renderPage(pageNum)
+        currentScale.textContent = parseInt(scale * 100);
+        let data = new FormData();
+
+        data.append('zoom_level', e.target.value)
+        data.append('book_id', '{{book.id}}')
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/update-zoom-level/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    let zoomLevelUpdateLogo = document.querySelector('#zoom-level-updated')
+                    zoomLevelUpdateLogo.style.display = 'block'
+                    setTimeout(() => {
+                        zoomLevelUpdateLogo.style.display = 'none'
+                    }, 2000)
+                    console.log('zoom level updated')
+                }
+            })
+            .catch(errors => console.log(errors))
+    })
+
+
+</script>
+
+<script>
+    const addQuestionForm = document.querySelector('#add-question-form')
+    addQuestionForm.addEventListener('submit', (e)=>{
+        e.preventDefault()
+        const question = document.querySelector('#question')
+        const answer = document.querySelector('#answer')
+        const page_number = pageNum 
+
+        let data = new FormData();
+
+        data.append('question', question.value)
+        data.append('answer', answer.value)
+        data.append('page_number', page_number)
+        data.append('book_id', '{{book.id}}')
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/add-question/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    // console.log(JSON.parse(res.data.questions))
+                    const isModalOpen = document.querySelector('#add-question').classList.contains('show')
+                    if(isModalOpen){
+                        const modalCloseBtn = document.querySelector('#modal-close-btn')
+                        modalCloseBtn.click()
+                    }
+                    const questionAnswerWrapper = document.querySelector('#question-answer-wrapper')
+                    const successMessage = document.createElement('div')
+                    successMessage.setAttribute('class', 'alert alert-success alert-dismissible fade show')
+                    successMessage.setAttribute('role', 'alert')
+                    successMessage.innerHTML = `
+                        <strong>Question added successfully!</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `
+                    questionAnswerWrapper.prepend(successMessage)
+
+                    let card = document.createElement('div')
+                    card.setAttribute('class', 'card my-3')
+                    card.innerHTML = `
+                    <div class="card-body position-relative">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            New
+                        </span>
+                        <h5 class="card-title">Question: ${res.data['question']}</h5>
+                        <div class="card-text">
+                            <b>Answer</b>:<br/>
+                            ${res.data['answer']}
+                        </div>
+                    </div>
+                    `
+                    const card_div = document.querySelector('#question-answer')
+                    card_div.prepend(card)
+                    const noQuestionMessage = document.querySelector('#no-question-available-message')
+                    if(noQuestionMessage){
+                        noQuestionMessage.style.display = 'none'
+                    }
+                    question.value = ''
+                    answer.value = ''
+                }
+                else {
+                    console.log('Some error occured')
+                    console.log(res)
+                }
+            })
+            .catch(errors => console.log(errors))
+    })
+</script>
+
+<script>
+    function updateQuestion(event){
+        event.preventDefault()
+        const updateQ = document.querySelector(`#update-question-${event.target.dataset.qid}`)
+        const updateA = document.querySelector(`#update-answer-${event.target.dataset.qid}`)
+        const updateQid = event.target.dataset.qid 
+        const cardtitle = document.querySelector(`#card-title-${updateQid}`)
+        const cardtext = document.querySelector(`#card-text-${updateQid}`)
+        let data = new FormData();
+
+        data.append('question', updateQ.value)
+        data.append('answer', updateA.value)
+        data.append('q_id', updateQid)
+        data.append("csrfmiddlewaretoken", '{{csrf_token}}')
+        axios.post('/book/update-question/', data)
+            .then(res => {
+                let status = res.data['status']
+                if (status == 'success') {
+                    const isModalOpen = document.querySelector(`#edit-answer-${updateQid}`).classList.contains('show')
+                    if(isModalOpen){
+                        const modalCloseBtn = document.querySelector(`#modal-close-btn-${updateQid}`)
+                        modalCloseBtn.click()
+                    }
+                    const questionAnswerWrapper = document.querySelector('#question-answer-wrapper')
+                    const successMessage = document.createElement('div')
+                    successMessage.setAttribute('class', 'alert alert-success alert-dismissible fade show')
+                    successMessage.setAttribute('role', 'alert')
+                    successMessage.innerHTML = `
+                        <strong>Question updated successfully!</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `
+                    questionAnswerWrapper.prepend(successMessage)
+
+                    let card = document.querySelector(`#card-${updateQid} > .card-body`)
+                    card.classList.add('position-relative')
+                    let updateBadgeSpan = document.createElement('span')
+                    updateBadgeSpan.setAttribute('class', 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger')
+                    updateBadgeSpan.textContent = 'Updated'
+                    card.appendChild(updateBadgeSpan)
+                    cardtitle.innerHTML = `Question: ${updateQ.value}`
+                    cardtext.innerHTML = `<b>Answer</b>: <br/> ${updateA.value}`
+                }
+                else {
+                    console.log('Some error occured')
+                    console.log(res)
+                }
+            })
+            .catch(errors => console.log(errors))
+    }
+</script>
+{% endblock %}

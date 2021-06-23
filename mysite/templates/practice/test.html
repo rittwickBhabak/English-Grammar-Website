@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %} Practice Will Make You Perfect {% endblock %}
+
+{% block practice_active %} active {% endblock %}
+
+{% block content %}
+
+<div id="starter">
+    No of Questions: {{questions|length}} <br>
+    Time: {{questions|length}} minutes  <br>
+    Chapters: <br>
+    {% for chapter in chapters %} 
+        {% if forloop.last %} 
+        {{chapter.name}} <br>
+        {% else %}
+        {{chapter.name}},  <br>
+        {% endif %}
+    {% endfor %}
+    <br>
+    <button id="start-exam" class="btn btn-primary">Start Exam</button>
+</div>
+
+<div id="exam" style="display: none;">
+    <form action="/practice/evaluate-exam/" method="POST" id="exam-paper">
+        {% csrf_token %}
+        {% for question in questions %} 
+        <div class="my-3">
+
+            <b>Question {{forloop.counter}}: </b> {{question.question}}
+            <div class="mb-3">
+                <label for="answer-{{question.id}}" class="form-label"><b>Answer:</b> </label>
+                <textarea class="form-control" name="answer-{{question.id}}" id="answer-{{question.id}}" rows="2"></textarea>
+            </div>
+            <hr>
+        </div>
+        {% endfor %}
+        <input type="text" name="quesiton_ids" id="" hidden value="{% for question in questions %}{% if forloop.last %}{{question.id}}{% else %}{{question.id}},{% endif %}{% endfor %}">
+        <input type="submit" value="Submit" class="btn btn-primary" id="submit-exam">
+    </form>
+</div>
+
+<div class="display-6" id="time-left" style="position: fixed;top:60px;right:50px;"></div>
+
+<script>
+    const form = document.querySelector('form')
+    const starExamBtn = document.querySelector('#start-exam')
+    const endExamBtn = document.querySelector('#submit-exam')
+    const examStarter = document.querySelector('#starter')
+    const exam = document.querySelector('#exam')
+    const timeRemained = document.querySelector('#time-left')
+
+    let timeInterval = null 
+    let secondsLeft = +({{questions|length}})*60
+    // let secondsLeft = 10;
+    starExamBtn.addEventListener('click', ()=>{
+        examStarter.style.display = 'none'
+        exam.style.display = 'block'
+        timeInterval = setInterval(()=>{
+            secondsLeft--;
+            timeRemained.textContent = `${parseInt(secondsLeft/60)}:${parseInt(secondsLeft%60)}`
+            if(secondsLeft==0){
+                form.submit()
+            }
+        },1000)
+    })
+</script>
+
+
+{% endblock %}

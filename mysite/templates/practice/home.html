@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %} Practice Will Make You Perfect | Choose the chapters to practice quesitons {% endblock %}
+
+{% block practice_active %} active {% endblock %}
+
+{% block content %}
+
+<h1>Choose Your Syllabus</h1>
+<h2>Chapters: </h2>
+<form action="/practice/start-exam/" method="POST">
+    {% csrf_token %}
+    {% for chapter in chapters %}
+    <div class="form-check my-2">
+        <input class="form-check-input" name="chapter" type="checkbox" value="{{chapter.book.id}}"
+            data-num="{{chapter.no_of_questions}}" id="chapter-{{forloop.counter}}">
+        <label class="form-check-label" for="chapter-{{forloop.counter}}">
+            {{chapter.book.name}} <br>
+            <small>This chapter has total of {{chapter.no_of_questions}} questions</small>
+        </label>
+    </div>
+
+    {% endfor %}
+    <br>
+    <br>
+    <label for="total-question">No of questions to practice: </label>
+    <input type="number" name="total-question" id="total-question" min="1" value="1" max="{{total_questions}}"
+        class="form-control" required>
+    <!-- <small>There are total {{total_questions}} questions. </small> -->
+    <br>
+
+    <input type="submit" class="btn btn-primary my-5" value="Start Test">
+</form>
+
+<script>
+    const form = document.querySelector('form')
+    form.addEventListener('submit', e => {
+        e.preventDefault()
+        const selected_chapters = [];
+        const chapters = document.querySelectorAll('input[type="checkbox"]:checked')
+        let totalnoOfQuestions = 0
+        const no_of_questions_input = document.querySelector('input[type="number"]').value
+        for (let chapter of chapters) {
+            selected_chapters.push(chapter)
+            console.log(chapter.dataset.num)
+            totalnoOfQuestions += +(chapter.dataset.num)
+        }
+        if (selected_chapters.length <= 0) {
+            alert('Atleast one chapter has to be selected')
+        } else if (totalnoOfQuestions < no_of_questions_input) {
+            alert(`There are not sufficient questions till now. Please reduce the number of question below ${totalnoOfQuestions+1} for your selected chapters.`)
+        } else {
+            form.submit()
+        }
+    })
+</script>
+{% endblock %}
+

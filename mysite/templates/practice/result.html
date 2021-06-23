@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluation | Practice Will Make You Perfect {% endblock %}
+
+{% block practice_active %} active {% endblock %}
+
+{% block content %}
+<div>
+    {% for answer in answers %} 
+    <div class="my-3">
+        <div class="row">
+            <div class="col-12 border"><b>Question:</b> {{answer.question.question}}</div>
+        </div>
+        <div class="row">
+            <div class="col-6 border">
+                <b>Original Answer:</b><br>
+                {{answer.question.answer}}
+            </div>
+            <div class="col-6 border">
+                <b>My Answer:</b><br>
+                {{answer.answer}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-8 border">
+                Source: {{answer.question.book.name}}
+                <a href="/book/{{answer.question.book.id}}/?page={{answer.question.page_number}}&question={{answer.question.id}}" target="_blank">view</a>
+            </div>
+            <div class="col-4 border">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="answer-status-{{answer.question.id}} id="answer-status-{{answer.question.id}}">
+                    <label class="form-check-label" for="answer-status-{{answer.question.id}}">
+                      Correct Attempt
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="answer-status-{{answer.question.id}} id="answer-status-{{answer.question.id}}">
+                    <label class="form-check-label" for="answer-status-{{answer.question.id}}">
+                      Incorrect Attempt
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="answer-status-{{answer.question.id}} id="answer-status-{{answer.question.id}}">
+                    <label class="form-check-label" for="answer-status-{{answer.question.id}}">
+                      Unattempt
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+</form>
+
+<a href="{% url 'home' %}" class="btn btn-primary">Go Home</a>
+
+{% endblock %}

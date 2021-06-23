@@ -1,0 +1,28 @@
+{% extends "base.html" %} 
+{% block title %} Book List {% endblock %}
+
+{% block books_active %} active {% endblock %}
+
+{% block content %}
+{% if all_books %}
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        <strong>Warning!</strong> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+<h1 class="display-4">All Books</h1>
+<ul class="list-group">
+    {% for book in all_books %} 
+    <li class="list-group-item list-group-item-action">
+        {{ book.name }}
+        <a href="/book/{{ book.id }}" class="btn btn-primary btn-sm float-end">Read</a>
+    </li>
+    {% endfor %} 
+  </ul>
+  {% else %} 
+    <h1 class="diplay-1">No Books Available</h1>
+  {% endif %}
+{% endblock %}
